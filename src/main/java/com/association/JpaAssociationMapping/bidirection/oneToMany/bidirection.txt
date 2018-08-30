@@ -1,0 +1,26 @@
+A quick overview of bidirectional one-to-many/many-to-one relationship in JPA
+In bidirectional one-to-many/many-to-one relationship, the target side has a reference back to the source entity as well.
+The annotation @OneToMany is used on the side which has the collection reference.
+The annotation @ManyToOne is used on the side which has the single-valued back reference.
+We must use 'mappedBy' element of the @OneToMany annotations to specify that the corresponding table will be the parent table. In other words the other side (which has @ManyToOne) will be the foreign-key table (child table).
+The value of 'mappedBy' element should be the name of the reference variable used in the other class's back reference.
+The side which has 'mappedBy' specified, will be the target entity of the relationship and corresponding table will be the parent of the relationship .
+The side which doesn't have 'mappedBy' element will be the source (owner) and the corresponding table will be the child of the relationship, i.e. it will have the foreign key column.
+On the owner side, we can also use @JoinColumn, whose one of the purposes is to specify a foreign key column name instead of relying on the default name.
+
+
+####
+The main differenece is that bidirectional relationship provides navigational access in both directions, so that you can access the other side without explicit queries. Also it allows you to apply cascading options to both directions.
+
+Note that navigational access is not always good, especially for "one-to-very-many" and "many-to-very-many" relationships. Imagine a Group that contains thousands of Users:
+
+How would you access them? With so many Users, you usually need to apply some filtering and/or pagination, so that you need to execute a query anyway (unless you use collection filtering, which looks like a hack for me). Some developers may tend to apply filtering in memory in such cases, which is obviously not good for performance. Note that having such a relationship can encourage this kind of developers to use it without considering performance implications.
+
+How would you add new Users to the Group? Fortunately, Hibernate looks at the owning side of relationship when persisting it, so you can only set User.group. However, if you want to keep objects in memory consistent, you also need to add User to Group.users. But it would make Hibernate to fetch all elements of Group.users from the database!
+
+So, I can't agree with the recommendation from the Best Practices. You need to design bidirectional relationships carefully, considering use cases (do you need navigational access in both directions?) and possible performance implications.
+
+See also:
+
+Deterring “ToMany” Relationships in JPA models
+Hibernate mapped collections performance problems
